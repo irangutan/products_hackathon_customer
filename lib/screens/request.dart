@@ -221,10 +221,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
       if(Globals.isHaveRequest == 1){
-        toastMessage("Not able to create a service request.");
+        toastMessage("Not able to create a service request when a service request is still open.");
         body_bool = true;
         setState(() {
-          isHaveRequestMsg = "Not able to create a service request.";
+          isHaveRequestMsg = "Not able to create a service request when a service request is still open.";
         });
       }
 

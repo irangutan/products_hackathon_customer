@@ -104,7 +104,7 @@ class _ListRequestPageState extends State<ListRequestPage> {
                 Padding(
                     padding: EdgeInsets.all(2.0),
                     child: Text(
-                      "Request Service last update.",
+                      "Latest open service request:",
                       textAlign: TextAlign.left,
                       style: TextStyle(fontSize: 25  ,fontWeight: FontWeight.bold ),
                     )) ,
