@@ -7,6 +7,7 @@ import '../utils/globals.dart' as Globals;
 import 'package:flutter/cupertino.dart';
 import 'package:grouped_buttons/grouped_buttons.dart';
 import 'review.dart' as ReviewScreen;
+import 'package:sms/sms.dart';
 void main() => runApp(RequestScreen());
 
 class RequestScreen extends StatelessWidget {
@@ -57,10 +58,15 @@ class Technicians {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   bool chkBol = false;
+  bool body_bool = false;
+  String isHaveRequestMsg = "";
 //  Future<Post> post;
   @override
   void initState() {
     Globals.currentIndex = 0;
+
+    triggerGetSMS();
+
     super.initState();
 //    post = fetchPost();
   }
@@ -75,9 +81,9 @@ class _MyHomePageState extends State<MyHomePage> {
     selectedTech = tech;
   }
   void moveToReview(){
-     if(selectedServiceCtr < 0 || selectedServiceCtr == 0){
-       toastMessage("Please select at least 1 service");
-     }else{
+    if(selectedServiceCtr < 0 || selectedServiceCtr == 0){
+      toastMessage("Please select at least 1 service / appliance");
+    }else{
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => ReviewScreen.ReviewScreen()),
@@ -109,19 +115,19 @@ class _MyHomePageState extends State<MyHomePage> {
 //
 //  }
   Widget widgetChkGroup(){
-   return CheckboxGroup(
-      labels: <String>[
-        "Television",
-        "Refrigerator"
-      ],
-      disabled: [
+    return CheckboxGroup(
+        labels: <String>[
+          "Television",
+          "Refrigerator"
+        ],
+        disabled: [
 //        "Wednesday",
 //        "Friday"
-      ],
+        ],
 //      checked: selectedServiceList,
-      onChange: (bool isChecked, String label, int index) => print("isChecked: $isChecked   label: $label  index: $index"),
+        onChange: (bool isChecked, String label, int index) => print("isChecked: $isChecked   label: $label  index: $index"),
 //      onSelected: (List<String> checked) => print("checked: ${checked.toString()}"),
-       onSelected: (List<String> checked) =>  pushSelectedService(checked)
+        onSelected: (List<String> checked) =>  pushSelectedService(checked)
 //       toastMessage("checked: ${checked.toString()}")
     ) ;
   }
@@ -172,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ) ;
   }
   Widget widgetListView(Widget widgetChild){
-  return SingleChildScrollView(
+    return SingleChildScrollView(
         child: new Column(
             children: <Widget>[
               Wrap(
@@ -190,6 +196,41 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
 
+  void triggerGetSMS() {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      getSMS();
+    });
+  }
+
+  Future<void> getSMS() async {
+    SmsQuery query = new SmsQuery();
+    List<SmsMessage> messages = await query.getAllSms;
+    List<SmsMessage> msg = await query.querySms(
+        address: Globals.serverNumber,
+        kinds: [SmsQueryKind.Sent, SmsQueryKind.Inbox]);
+
+    setState(() {
+
+
+      if(!msg[0].body.toString().contains("completed")){
+        Globals.isHaveRequest = 1;
+
+      }else{
+        Globals.isHaveRequest = 0;
+      }
+
+
+      if(Globals.isHaveRequest == 1){
+        toastMessage("Not able to create a service request.");
+        body_bool = true;
+        setState(() {
+          isHaveRequestMsg = "Not able to create a service request.";
+        });
+      }
+
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -206,23 +247,25 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Colors.white,
 
       ),
-      body: Center (
-          child: new SingleChildScrollView(
-              child: new Column(
-                  children: <Widget>[
-                    Wrap(
-                      spacing: 8.0, // gap between adjacent chips
-                      runSpacing: 4.0, // gap between lines
-                      children: <Widget>[
-                        Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child :
-                            Text ("Select an Appliance" ,
-                              textAlign: TextAlign.right , style: TextStyle(fontWeight: FontWeight.bold , fontSize: 20),)
-                        )
+      body: Center(
+        child: AbsorbPointer (
+            absorbing: body_bool ,
+            child: new SingleChildScrollView(
+                child: new Column(
+                    children: <Widget>[
+                      Wrap(
+                        spacing: 8.0, // gap between adjacent chips
+                        runSpacing: 4.0, // gap between lines
+                        children: <Widget>[
+                          Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child :
+                              Text ("Select an Appliance " ,
+                                textAlign: TextAlign.right , style: TextStyle(fontWeight: FontWeight.bold , fontSize: 20),)
+                          )
 
-                        ,
-                        widgetCard ( widgetListView(widgetChkGroup()) ) ,
+                          ,
+                          widgetCard ( widgetListView(widgetChkGroup()) ) ,
 //            Padding(
 //                padding: EdgeInsets.all(20.0),
 //                child :
@@ -230,17 +273,23 @@ class _MyHomePageState extends State<MyHomePage> {
 //                  textAlign: TextAlign.right , style: TextStyle(fontWeight: FontWeight.bold , fontSize: 20),)
 //            ) ,
 //            widgetDropdown(),
-                        Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child :widgetButton("PROCEED" , moveToReview)
+                          Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child :widgetButton("PROCEED" , moveToReview)
 
-                        )
+                          ) ,
+                          Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child : Text ('${isHaveRequestMsg}')
 
-                      ],
-                    )
-                  ]
-              )
-          )
+                          )
+
+                        ],
+                      )
+                    ]
+                )
+            )
+        ),
       ),
 //      floatingActionButton: FloatingActionButton(
 //        onPressed: _incrementCounter,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import '../utils/globals.dart' as Globals;
 import '../utils/api_helper.dart' as APIHelper;
-import '../utils/sms_methods.dart' as SMS ;
+import '../utils/sms_methods.dart' as SMS;
 import 'splash.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:flutter/foundation.dart'
@@ -11,6 +11,7 @@ import 'package:mobile_popup/mobile_popup.dart';
 import 'package:sms/sms.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+
 void main() => runApp(ListRequestScreen());
 
 class ListRequestScreen extends StatelessWidget {
@@ -55,47 +56,39 @@ class ListRequestPage extends StatefulWidget {
 }
 
 class _ListRequestPageState extends State<ListRequestPage> {
-
   List<Widget> listWidgetMsg = new List<Widget>();
   @override
   void initState() {
 
-
-      Globals.currentIndex = 1;
-      Future.delayed(const Duration(milliseconds: 3000), () {
-
-
-          // Here you can write your code for open new view
-          triggerGetSMS();
-
-     });
-
-
+    // Here you can write your code for open new view
+    triggerGetSMS();
     APIHelper.getCurrentLocation();
-
+    setState(() {
+      Globals.currentIndex = 1;
+      listWidgetMsg.add(Text("Loading..."));
+    });
     super.initState();
 //    post = fetchPost();
   }
-  void triggerGetSMS(){
+
+  void triggerGetSMS() {
     Future.delayed(const Duration(milliseconds: 500), () {
       getSMS();
     });
   }
+
   Future<void> getSMS() async {
     SmsQuery query = new SmsQuery();
     List<SmsMessage> messages = await query.getAllSms;
-    List<SmsMessage> msg = await query
-        .querySms(address: Globals.serverNumber, kinds: [SmsQueryKind.Inbox , SmsQueryKind.Sent]);
+    List<SmsMessage> msg = await query.querySms(
+        address: Globals.serverNumber,
+        kinds: [SmsQueryKind.Sent, SmsQueryKind.Inbox]);
 
     setState(() {
-//      message_body = msg.toList().toString();
       listWidgetMsg.clear();
-      String message_body = "";
-      String time_stamp = "";
-      String message_id = "";
-      String message_response = "";
-      String message_completed = "";
-      if(msg[0].body.toString().toLowerCase().contains("_new") ){
+
+      if(!msg[0].body.toString().contains("completed")){
+        Globals.isHaveRequest = 1;
         listWidgetMsg.add(Container(
           alignment: Alignment.topCenter,
           padding: new EdgeInsets.only(
@@ -107,119 +100,33 @@ class _ListRequestPageState extends State<ListRequestPage> {
             child: new Card(
               color: Colors.white,
               elevation: 4.0,
-              child: Padding(
-                  padding: EdgeInsets.all(2.0),
-                  child: Text(
-                    "New",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20),
-                  )),
+              child: Column( children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.all(2.0),
+                    child: Text(
+                      "Request Service last update.",
+                      textAlign: TextAlign.left,
+                      style: TextStyle(fontSize: 25  ,fontWeight: FontWeight.bold ),
+                    )) ,
+                Padding(
+                    padding: EdgeInsets.all(2.0),
+                    child: Text(
+                      msg[0].body.toString(),
+                      textAlign: TextAlign.left,
+                      style: TextStyle(fontSize: 20),
+                    ))
+              ],)
+
+
+              ,
             ),
           ),
         ));
-      }else if(msg[0].body.toString().toLowerCase().contains("_completed") ){
-        listWidgetMsg.add(Container(
-          alignment: Alignment.topCenter,
-          padding: new EdgeInsets.only(
-//          top: MediaQuery.of(context).size.height * .58,
-              right: 20.0,
-              left: 20.0),
-          child: new Container(
-            width: MediaQuery.of(context).size.width,
-            child: new Card(
-              color: Colors.white,
-              elevation: 4.0,
-              child: Padding(
-                  padding: EdgeInsets.all(2.0),
-                  child: Text(
-                    "No Record",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20),
-                  )),
-            ),
-          ),
-        ));
+      }else{
+        Globals.isHaveRequest = 0;
       }
-      else {
-        listWidgetMsg.add(Container(
-          alignment: Alignment.topCenter,
-          padding: new EdgeInsets.only(
-//          top: MediaQuery.of(context).size.height * .58,
-              right: 20.0,
-              left: 20.0),
-          child: new Container(
-            width: MediaQuery.of(context).size.width,
-            child: new Card(
-              color: Colors.white,
-              elevation: 4.0,
-              child: Padding(
-                  padding: EdgeInsets.all(2.0),
-                  child: Text(
-                    "No Record",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20),
-                  )),
-            ),
-          ),
-        ));
-      }
-
-      if(msg[0].body.toString().toLowerCase().contains("_completed") ){
-        listWidgetMsg.clear();
-        listWidgetMsg.add(Container(
-          alignment: Alignment.topCenter,
-          padding: new EdgeInsets.only(
-//          top: MediaQuery.of(context).size.height * .58,
-              right: 20.0,
-              left: 20.0),
-          child: new Container(
-            width: MediaQuery.of(context).size.width,
-            child: new Card(
-              color: Colors.white,
-              elevation: 4.0,
-              child: Padding(
-                  padding: EdgeInsets.all(2.0),
-                  child: Text(
-                    "No Record",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20),
-                  )),
-            ),
-          ),
-        ));
-      }
-
-
-      if(msg[0].body.toString().toLowerCase().contains("_optin") ){
-        listWidgetMsg.clear();
-        listWidgetMsg.add(Container(
-          alignment: Alignment.topCenter,
-          padding: new EdgeInsets.only(
-//          top: MediaQuery.of(context).size.height * .58,
-              right: 20.0,
-              left: 20.0),
-          child: new Container(
-            width: MediaQuery.of(context).size.width,
-            child: new Card(
-              color: Colors.white,
-              elevation: 4.0,
-              child: Padding(
-                  padding: EdgeInsets.all(2.0),
-                  child: Text(
-                    msg[0].date.toString(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20),
-                  )),
-            ),
-          ),
-        ));
-      }
-
-
-//    return new Column(children: list) ;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -239,20 +146,14 @@ class _ListRequestPageState extends State<ListRequestPage> {
       appBar: AppBar(
         // Here we take the value from the ListRequestPage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title , style: TextStyle(fontWeight: FontWeight.bold , color: Colors.black )),
+        title: Text(widget.title,
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
         backgroundColor: Colors.white,
       ),
       body: Center(
-        child: new SingleChildScrollView(
-            child: new Column(
-                children: <Widget>[
-                  Column(children: listWidgetMsg)
-                ]
-            )
-        )
-
-
-      ),
+          child: new SingleChildScrollView(
+              child: new Column(
+                  children: <Widget>[Column(children: listWidgetMsg)]))),
 //      floatingActionButton: FloatingActionButton(
 //        onPressed:  ,
 //        tooltip: 'Increment',

@@ -25,7 +25,7 @@ var contactController = TextEditingController();
 var messageController = TextEditingController();
 bool isConnected = false;
 int isSMSSent = 0 ;
-
+int isHaveRequest = 0 ;
 //class SizeConfig {
 //  static MediaQueryData _mediaQueryData;
 //  static double screenWidth;
